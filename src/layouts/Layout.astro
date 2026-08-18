@@ -6,7 +6,7 @@ const { title = 'FMC Dynamic Objects' } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="uk">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
@@ -16,12 +16,16 @@ const { title = 'FMC Dynamic Objects' } = Astro.props;
 	</head>
 	<body>
 		<header class="topbar">
-			<a class="brand" href="#/">FMC Dynamic Objects</a>
+			<a class="brand" id="navBrand" href="#/">FMC Динамічні об’єкти</a>
 			<nav>
-				<a href="#/">Dashboard</a>
-				<a href="#/objects/new">New object</a>
-				<a href="#/licenses">License check</a>
-				<a href="#/settings">Settings</a>
+				<a id="navDashboard" href="#/">Огляд</a>
+				<a id="navNewObject" href="#/objects/new">Новий об’єкт</a>
+				<a id="navLicenses" href="#/licenses">Перевірка ліцензій</a>
+				<a id="navSettings" href="#/settings">Налаштування</a>
+				<select id="langSwitch" aria-label="Language / Мова">
+					<option value="uk">UA</option>
+					<option value="en">EN</option>
+				</select>
 			</nav>
 		</header>
 		<main id="view">
@@ -52,6 +56,10 @@ const { title = 'FMC Dynamic Objects' } = Astro.props;
 	}
 	.brand { font-weight: 600; text-decoration: none; color: var(--text); }
 	.topbar nav a { margin-left: 18px; text-decoration: none; font-size: 14px; }
+	.topbar nav select {
+		margin-left: 18px; width: auto; padding: 4px 8px; font-size: 13px;
+		display: inline-block;
+	}
 	table { width: 100%; border-collapse: collapse; margin-top: 16px; }
 	th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
 	th { color: var(--muted); font-weight: 500; }

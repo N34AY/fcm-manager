@@ -1,30 +1,22 @@
 import { api, errMessage } from '../api';
 import { esc, banner } from '../util';
+import { t, deviceWord } from '../i18n';
 
 export async function renderLicenses(container: HTMLElement) {
 	const conn = await api.getConnection();
 
 	let html = `
-		<h1>License Check</h1>
-		<p class="muted">
-			Cross-checks each device's licenses against whether its assigned Access
-			Control Policy uses an Intrusion Policy anywhere (rules or default
-			action) — the thing that requires the Threat license. Read-only, makes
-			no changes.
-		</p>
-		<p class="muted">
-			Not checked: Intrusion Policy applied via a Security Intelligence block
-			response. If everything below looks fine but deploy still fails, check
-			that manually under the policy's Security Intelligence tab.
-		</p>`;
+		<h1>${t('licenses.title')}</h1>
+		<p class="muted">${t('licenses.description')}</p>
+		<p class="muted">${t('licenses.notChecked')}</p>`;
 
 	if (!conn.connected) {
-		html += banner('warn', 'Not connected to FMC. Go to Settings first.') + `<p><a href="#/settings">Settings</a></p>`;
+		html += banner('warn', t('licenses.notConnected')) + `<p><a href="#/settings">${t('nav.settings')}</a></p>`;
 		container.innerHTML = html;
 		return;
 	}
 
-	container.innerHTML = html + `<p class="muted">Loading devices…</p>`;
+	container.innerHTML = html + `<p class="muted">${t('licenses.loadingDevices')}</p>`;
 
 	try {
 		const devices = await api.listDevices();
@@ -64,8 +56,8 @@ export async function renderLicenses(container: HTMLElement) {
 
 		html +=
 			mismatchCount > 0
-				? banner('error', `${mismatchCount} device${mismatchCount > 1 ? 's' : ''} likely to fail deploy with the THREAT license error.`)
-				: banner('ok', 'No license/policy mismatches found.');
+				? banner('error', t('licenses.mismatchFound', { count: mismatchCount, deviceWord: deviceWord(mismatchCount) }))
+				: banner('ok', t('licenses.noMismatch'));
 
 		const bodyRows =
 			rows
@@ -73,25 +65,25 @@ export async function renderLicenses(container: HTMLElement) {
 					(r) => `
 			<tr>
 				<td>${esc(r.deviceName)}</td>
-				<td>${r.hasThreat ? '✅ yes' : '❌ missing'}</td>
-				<td>${r.policyName ? esc(r.policyName) : '<span class="muted">none assigned</span>'}</td>
-				<td title="${esc(r.reasons.join('\n'))}">${r.usesIntrusion ? `yes (${r.reasons.length})` : 'no'}</td>
+				<td>${r.hasThreat ? t('licenses.threatYes') : t('licenses.threatMissing')}</td>
+				<td>${r.policyName ? esc(r.policyName) : `<span class="muted">${t('licenses.noneAssigned')}</span>`}</td>
+				<td title="${esc(r.reasons.join('\n'))}">${r.usesIntrusion ? t('licenses.usesYes', { count: r.reasons.length }) : t('licenses.usesNo')}</td>
 				<td>${
 					r.mismatch
-						? '<span class="badge external" style="background:rgba(255,93,93,0.15); color:#ff5d5d;">MISMATCH</span>'
-						: '<span class="badge managed">OK</span>'
+						? `<span class="badge external" style="background:rgba(255,93,93,0.15); color:#ff5d5d;">${t('licenses.mismatch')}</span>`
+						: `<span class="badge managed">${t('licenses.ok')}</span>`
 				}</td>
 			</tr>`
 				)
-				.join('') || `<tr><td colspan="5" class="muted">No devices found.</td></tr>`;
+				.join('') || `<tr><td colspan="5" class="muted">${t('licenses.noDevices')}</td></tr>`;
 
 		html += `
 			<table>
-				<thead><tr><th>Device</th><th>Threat license</th><th>Access Policy</th><th>Uses Intrusion Policy?</th><th>Verdict</th></tr></thead>
+				<thead><tr><th>${t('licenses.colDevice')}</th><th>${t('licenses.colThreat')}</th><th>${t('licenses.colPolicy')}</th><th>${t('licenses.colUsesIntrusion')}</th><th>${t('licenses.colVerdict')}</th></tr></thead>
 				<tbody>${bodyRows}</tbody>
 			</table>`;
 	} catch (err) {
-		html += banner('error', 'Failed to load: ' + errMessage(err));
+		html += banner('error', t('licenses.failedToLoad', { msg: errMessage(err) }));
 	}
 
 	container.innerHTML = html;

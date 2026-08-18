@@ -1,44 +1,41 @@
 import { api, errMessage } from '../api';
 import { esc, banner } from '../util';
+import { t } from '../i18n';
 
 export async function renderSettings(container: HTMLElement) {
 	const conn = await api.getConnection();
 
 	container.innerHTML = `
-		<h1>Settings</h1>
+		<h1>${t('settings.title')}</h1>
 		<div id="msg"></div>
-		<div class="banner warn">
-			FMC calls run in the desktop app's Rust backend, not the webview — TLS
-			certificate errors are bypassed there and there's no browser CORS
-			restriction to work around.
-		</div>
+		<div class="banner warn">${t('settings.tlsNote')}</div>
 		<div class="card">
-			<h2>Connection status</h2>
-			<p id="connStatus">${conn.connected ? '🟢 Token set' : '⚪ No token set'}</p>
-			<p class="muted" id="domainStatus">Domain: ${conn.domain ? `<code>${esc(conn.domain)}</code>` : 'not set'}</p>
+			<h2>${t('settings.connectionStatus')}</h2>
+			<p id="connStatus">${conn.connected ? t('settings.tokenSet') : t('settings.noToken')}</p>
+			<p class="muted" id="domainStatus">${t('settings.domainLabel')}: ${conn.domain ? `<code>${esc(conn.domain)}</code>` : t('settings.domainNotSet')}</p>
 
 			<form id="connForm">
-				<label for="host">FMC host</label>
+				<label for="host">${t('settings.hostLabel')}</label>
 				<input id="host" name="host" value="${esc(conn.host)}" placeholder="https://fmc.example.com" />
 
-				<label for="token">Token (paste X-auth-access-token from DevTools)</label>
-				<input id="token" name="token" placeholder="leave blank if using username/password below" />
+				<label for="token">${t('settings.tokenLabel')}</label>
+				<input id="token" name="token" placeholder="${esc(t('settings.tokenPlaceholder'))}" />
 
-				<p class="muted" style="margin-top:16px;">— or fetch a fresh token with credentials (used once, not stored) —</p>
+				<p class="muted" style="margin-top:16px;">${t('settings.orFetch')}</p>
 
-				<label for="username">Username</label>
+				<label for="username">${t('settings.usernameLabel')}</label>
 				<input id="username" name="username" autocomplete="off" />
 
-				<label for="password">Password</label>
+				<label for="password">${t('settings.passwordLabel')}</label>
 				<input id="password" name="password" type="password" autocomplete="off" />
 
-				<button type="submit">Save &amp; Connect</button>
+				<button type="submit">${t('settings.saveConnect')}</button>
 			</form>
 		</div>
 
 		<div class="card" id="domainCard">
-			<h2>Domain</h2>
-			<p class="muted">Connect first to list domains.</p>
+			<h2>${t('settings.domainTitle')}</h2>
+			<p class="muted">${t('settings.connectFirst')}</p>
 		</div>
 	`;
 
@@ -47,8 +44,8 @@ export async function renderSettings(container: HTMLElement) {
 
 	async function refreshStatus() {
 		const c = await api.getConnection();
-		(container.querySelector('#connStatus') as HTMLElement).textContent = c.connected ? '🟢 Token set' : '⚪ No token set';
-		(container.querySelector('#domainStatus') as HTMLElement).innerHTML = `Domain: ${c.domain ? `<code>${esc(c.domain)}</code>` : 'not set'}`;
+		(container.querySelector('#connStatus') as HTMLElement).textContent = c.connected ? t('settings.tokenSet') : t('settings.noToken');
+		(container.querySelector('#domainStatus') as HTMLElement).innerHTML = `${t('settings.domainLabel')}: ${c.domain ? `<code>${esc(c.domain)}</code>` : t('settings.domainNotSet')}`;
 		return c;
 	}
 
@@ -56,7 +53,7 @@ export async function renderSettings(container: HTMLElement) {
 		const card = container.querySelector('#domainCard') as HTMLElement;
 		const c = await api.getConnection();
 		if (!c.connected) {
-			card.innerHTML = '<h2>Domain</h2><p class="muted">Connect first to list domains.</p>';
+			card.innerHTML = `<h2>${t('settings.domainTitle')}</h2><p class="muted">${t('settings.connectFirst')}</p>`;
 			return;
 		}
 
@@ -65,11 +62,11 @@ export async function renderSettings(container: HTMLElement) {
 			domains = await api.listDomains();
 		} catch (err) {
 			card.innerHTML =
-				`<h2>Domain</h2>` +
-				banner('error', "Couldn't auto-list domains: " + errMessage(err)) +
-				`<label for="domainManual">Domain UUID (manual)</label>
+				`<h2>${t('settings.domainTitle')}</h2>` +
+				banner('error', t('settings.domainAutoError', { msg: errMessage(err) })) +
+				`<label for="domainManual">${t('settings.domainManualLabel')}</label>
 				<input id="domainManual" value="${esc(c.domain)}" />
-				<button id="saveDomainManual">Save domain</button>`;
+				<button id="saveDomainManual">${t('settings.saveDomain')}</button>`;
 			card.querySelector('#saveDomainManual')!.addEventListener('click', async () => {
 				const val = (card.querySelector('#domainManual') as HTMLInputElement).value.trim();
 				await api.setConnection({ domain: val });
@@ -80,18 +77,18 @@ export async function renderSettings(container: HTMLElement) {
 		}
 
 		if (domains.length === 0) {
-			card.innerHTML = '<h2>Domain</h2><p class="muted">No domains returned for this token yet.</p>';
+			card.innerHTML = `<h2>${t('settings.domainTitle')}</h2><p class="muted">${t('settings.noDomains')}</p>`;
 		} else if (domains.length === 1) {
-			card.innerHTML = `<h2>Domain</h2><p class="muted">Only one domain visible to this token — set automatically. ${esc(domains[0].name)} (<code>${esc(domains[0].uuid)}</code>)</p>`;
+			card.innerHTML = `<h2>${t('settings.domainTitle')}</h2><p class="muted">${t('settings.onlyOneDomain', { name: domains[0].name, uuid: domains[0].uuid })}</p>`;
 		} else {
 			const options = domains
 				.map((d) => `<option value="${esc(d.uuid)}" ${d.uuid === c.domain ? 'selected' : ''}>${esc(d.name)} (${esc(d.uuid)})</option>`)
 				.join('');
 			card.innerHTML = `
-				<h2>Domain</h2>
-				<label for="domainSelect">This token can see multiple domains — pick one</label>
+				<h2>${t('settings.domainTitle')}</h2>
+				<label for="domainSelect">${t('settings.multipleDomains')}</label>
 				<select id="domainSelect">${options}</select>
-				<button id="saveDomainSelect">Save domain</button>`;
+				<button id="saveDomainSelect">${t('settings.saveDomain')}</button>`;
 			card.querySelector('#saveDomainSelect')!.addEventListener('click', async () => {
 				const val = (card.querySelector('#domainSelect') as HTMLSelectElement).value;
 				await api.setConnection({ domain: val });
@@ -117,7 +114,7 @@ export async function renderSettings(container: HTMLElement) {
 			} else if (username && password) {
 				await api.login(username, password);
 			} else {
-				throw new Error('Provide either a token or a username/password.');
+				throw new Error(t('errors.provideCredentials'));
 			}
 
 			try {
@@ -127,7 +124,7 @@ export async function renderSettings(container: HTMLElement) {
 				// Older FMC versions may not expose info/domain — leave for manual entry.
 			}
 
-			msg.innerHTML = banner('ok', 'Connection updated.');
+			msg.innerHTML = banner('ok', t('settings.connectionUpdated'));
 			await refreshStatus();
 			renderDomainCard();
 		} catch (err) {

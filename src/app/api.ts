@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { translateError } from './i18n';
 
 export interface ConnectionInfo {
 	host: string;
@@ -65,6 +66,6 @@ export const api = {
 };
 
 export function errMessage(err: unknown): string {
-	if (err instanceof Error) return err.message;
-	return String(err);
+	const raw = err instanceof Error ? err.message : String(err);
+	return translateError(raw);
 }
