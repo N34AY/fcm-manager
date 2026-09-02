@@ -30,7 +30,7 @@ impl Default for AppState {
     fn default() -> Self {
         AppState {
             conn: Mutex::new(Connection {
-                host: "https://fmc.example.com".to_string(),
+                host: String::new(),
                 domain: String::new(),
                 token: None,
             }),

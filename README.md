@@ -1,12 +1,12 @@
 # fcm-manager
 
 Desktop app (Tauri) to list, create, and delete Cisco FMC **Dynamic Objects**
-and manage their IP mappings, for `https://fmc.example.com`.
+and manage their IP mappings.
 
 ## Why a desktop app, not a web page
 
-That FMC instance presents a certificate that fails normal TLS validation,
-and its API sends no CORS headers — so a plain web page cannot call it
+Some FMC instances present a certificate that fails normal TLS validation,
+and their API sends no CORS headers — so a plain web page cannot call it
 directly (browsers block both cross-origin reads without CORS and, in some
 setups, the cert itself), and a page can't be told to ignore either
 restriction from client-side JS.
