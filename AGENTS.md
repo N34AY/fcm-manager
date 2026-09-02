@@ -3,8 +3,10 @@
 This is a Tauri desktop app: Astro (static, client-side only, no SSR) as the
 frontend in `src/`, Rust in `src-tauri/src/` as the backend. The frontend
 never calls FMC directly — it only calls Rust `#[tauri::command]`s via
-`invoke()` from `@tauri-apps/api`. All FMC HTTP calls, the TLS bypass, and
-the managed-objects safety guard live in Rust (`src-tauri/src/fmc.rs`).
+`invoke()` from `@tauri-apps/api`. All FMC HTTP calls and the TLS bypass
+live in Rust (`src-tauri/src/fmc.rs`). The app can edit mappings on any
+Dynamic Object the connected account has FMC rights to, and never deletes
+Dynamic Objects.
 
 ## Development
 

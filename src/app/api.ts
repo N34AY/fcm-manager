@@ -36,12 +36,6 @@ export interface PolicyThreatUsage {
 	reasons: string[];
 }
 
-export interface ManagedEntry {
-	id: string;
-	name: string;
-	createdAt: string;
-}
-
 export const api = {
 	getConnection: () => invoke<ConnectionInfo>('get_connection'),
 	setConnection: (opts: { host?: string; domain?: string; token?: string }) =>
@@ -53,13 +47,10 @@ export const api = {
 	getDynamicObject: (id: string) => invoke<DynamicObject>('get_dynamic_object', { id }),
 	createDynamicObject: (name: string, description: string, objectType: string) =>
 		invoke<DynamicObject>('create_dynamic_object', { name, description, objectType }),
-	deleteDynamicObject: (id: string) => invoke<void>('delete_dynamic_object', { id }),
 
 	getMappings: (id: string) => invoke<string[]>('get_mappings', { id }),
 	addMapping: (id: string, ip: string) => invoke<void>('add_mapping', { id, ip }),
 	removeMapping: (id: string, ip: string) => invoke<void>('remove_mapping', { id, ip }),
-
-	listManaged: () => invoke<ManagedEntry[]>('list_managed'),
 
 	listDevices: () => invoke<DeviceRecord[]>('list_devices'),
 	getPolicyThreatUsage: (policyId: string) => invoke<PolicyThreatUsage>('get_policy_threat_usage', { policyId }),

@@ -21,9 +21,6 @@ export const uk = {
 		colName: 'Назва',
 		colType: 'Тип',
 		colId: 'ID',
-		colOwner: 'Власник',
-		badgeManaged: 'створено тут',
-		badgeExternal: 'зовнішній',
 		view: 'Переглянути',
 	},
 	settings: {
@@ -65,20 +62,13 @@ export const uk = {
 	objectDetail: {
 		mappingRemoved: 'Відображення видалено.',
 		mappingAdded: 'Відображення додано.',
-		externalWarning:
-			'Цей об’єкт не було створено цим застосунком — тут лише перегляд. Зміна відображень і видалення вимкнені, щоб не чіпати об’єкти, якими цей інструмент не керує.',
 		mappingsTitle: 'IP-відображення',
 		noMappings: 'Відображень немає.',
 		remove: 'Видалити',
 		addIpLabel: 'Додати IP',
 		add: 'Додати',
-		dangerZone: 'Небезпечна зона',
-		deleteObject: 'Видалити об’єкт',
-		deleteConfirm: 'Видалити цей динамічний об’єкт? Це неможливо скасувати.',
 		failedToLoad: 'Не вдалося завантажити: {msg}',
 		typeLabel: 'тип',
-		createdBadge: 'створено тут',
-		externalBadge: 'зовнішній',
 	},
 	licenses: {
 		title: 'Перевірка ліцензій',
@@ -108,8 +98,6 @@ export const uk = {
 	errors: {
 		notConnected: 'Немає з’єднання з FMC — спочатку встановіть токен.',
 		noDomain: 'Домен FMC не налаштовано — спочатку вкажіть його.',
-		refusingDelete: 'Відмова у видаленні: цей об’єкт не було створено цим застосунком.',
-		refusingModify: 'Відмова у зміні: цей об’єкт не було створено цим застосунком.',
 		noTokenHeader: 'FMC не повернув X-auth-access-token у заголовках відповіді.',
 		provideCredentials: 'Вкажіть токен або логін/пароль.',
 	},

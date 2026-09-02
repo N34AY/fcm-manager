@@ -24,9 +24,6 @@ export const en: Strings<typeof uk> = {
 		colName: 'Name',
 		colType: 'Type',
 		colId: 'ID',
-		colOwner: 'Owner',
-		badgeManaged: 'created here',
-		badgeExternal: 'external',
 		view: 'View',
 	},
 	settings: {
@@ -68,20 +65,13 @@ export const en: Strings<typeof uk> = {
 	objectDetail: {
 		mappingRemoved: 'Mapping removed.',
 		mappingAdded: 'Mapping added.',
-		externalWarning:
-			"This object was not created by this app — read-only here. Mapping changes and deletion are disabled to avoid touching objects this tool doesn't own.",
 		mappingsTitle: 'IP mappings',
 		noMappings: 'No mappings.',
 		remove: 'Remove',
 		addIpLabel: 'Add IP',
 		add: 'Add',
-		dangerZone: 'Danger zone',
-		deleteObject: 'Delete object',
-		deleteConfirm: 'Delete this dynamic object? This cannot be undone.',
 		failedToLoad: 'Failed to load: {msg}',
 		typeLabel: 'type',
-		createdBadge: 'created here',
-		externalBadge: 'external',
 	},
 	licenses: {
 		title: 'License Check',
@@ -111,8 +101,6 @@ export const en: Strings<typeof uk> = {
 	errors: {
 		notConnected: 'Not connected to FMC — set a token first.',
 		noDomain: 'No FMC domain configured — set it first.',
-		refusingDelete: 'Refusing to delete: this object was not created by this app.',
-		refusingModify: 'Refusing to modify: this object was not created by this app.',
 		noTokenHeader: 'FMC did not return X-auth-access-token in the response headers.',
 		provideCredentials: 'Provide either a token or a username/password.',
 	},

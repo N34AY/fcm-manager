@@ -1,7 +1,7 @@
 # fcm-manager
 
-Desktop app (Tauri) to list, create, and delete Cisco FMC **Dynamic Objects**
-and manage their IP mappings.
+Desktop app (Tauri) to list and create Cisco FMC **Dynamic Objects** and
+manage their IP mappings.
 
 ## Why a desktop app, not a web page
 
@@ -22,15 +22,12 @@ The frontend (Astro, static, in `src/`) never talks to FMC directly — it
 calls Rust `#[tauri::command]`s over Tauri's IPC (`invoke(...)`), which is
 not a network request and isn't subject to any of the above.
 
-## Safety: only touches objects it created
+## Permissions
 
-Every dynamic object created through this app is recorded in a local JSON
-file in the OS app-data directory (`app_data_dir()/managed-objects.json` —
-resolved by Tauri per-platform, not inside the repo). The Rust commands for
-delete / add-mapping / remove-mapping check that file **before** calling
-FMC — objects that already existed before this app touched them are
-read-only in the UI and rejected server-side (in Rust) even if called
-directly.
+The app can add or remove IP mappings on any Dynamic Object visible to the
+connected FMC account — access control is left entirely to FMC's own RBAC
+(the API call simply fails if the account lacks edit rights on an object).
+The app never deletes Dynamic Objects.
 
 ## Setup
 

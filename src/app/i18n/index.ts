@@ -69,8 +69,6 @@ export function deviceWord(n: number): string {
 const knownErrors: Record<string, string> = {
 	'Not connected to FMC — set a token first.': 'errors.notConnected',
 	'No FMC domain configured — set it first.': 'errors.noDomain',
-	'Refusing to delete: this object was not created by this app.': 'errors.refusingDelete',
-	'Refusing to modify: this object was not created by this app.': 'errors.refusingModify',
 	'FMC did not return X-auth-access-token in the response headers.': 'errors.noTokenHeader',
 };
 

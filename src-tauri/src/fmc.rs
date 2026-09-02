@@ -1,8 +1,7 @@
 use reqwest::{Client, Method};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::sync::Mutex;
-use tauri::{AppHandle, Manager, State};
+use tauri::State;
 
 // This FMC instance presents a certificate that fails normal validation.
 // Because these requests run in the Rust backend (not the webview), there's
@@ -103,14 +102,6 @@ pub struct PolicyThreatUsage {
     pub reasons: Vec<String>,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ManagedEntry {
-    pub id: String,
-    pub name: String,
-    pub created_at: String,
-}
-
 // --- low-level request helpers -----------------------------------------
 
 async fn authed_request(
@@ -175,35 +166,6 @@ async fn paginate(conn: &Connection, base_path: &str) -> Result<Vec<serde_json::
         }
     }
     Ok(items)
-}
-
-// --- managed-objects store (guards which objects this app may mutate) ---
-
-fn managed_store_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
-    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
-    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    Ok(dir.join("managed-objects.json"))
-}
-
-fn read_managed(app: &AppHandle) -> Vec<ManagedEntry> {
-    let path = match managed_store_path(app) {
-        Ok(p) => p,
-        Err(_) => return Vec::new(),
-    };
-    fs::read_to_string(path)
-        .ok()
-        .and_then(|s| serde_json::from_str(&s).ok())
-        .unwrap_or_default()
-}
-
-fn write_managed(app: &AppHandle, entries: &[ManagedEntry]) -> Result<(), String> {
-    let path = managed_store_path(app)?;
-    let data = serde_json::to_string_pretty(entries).map_err(|e| e.to_string())?;
-    fs::write(path, data).map_err(|e| e.to_string())
-}
-
-fn is_managed(app: &AppHandle, id: &str) -> bool {
-    read_managed(app).iter().any(|e| e.id == id)
 }
 
 // --- commands -------------------------------------------------------------
@@ -300,7 +262,6 @@ pub async fn get_dynamic_object(state: State<'_, AppState>, id: String) -> Resul
 
 #[tauri::command]
 pub async fn create_dynamic_object(
-    app: AppHandle,
     state: State<'_, AppState>,
     name: String,
     description: String,
@@ -315,31 +276,7 @@ pub async fn create_dynamic_object(
         "type": "DynamicObject",
     });
     let res = api(&conn, Method::POST, &path, Some(body)).await?;
-    let created: DynamicObject = serde_json::from_value(res).map_err(|e| e.to_string())?;
-
-    let mut entries = read_managed(&app);
-    entries.push(ManagedEntry {
-        id: created.id.clone(),
-        name: created.name.clone(),
-        created_at: now_string(),
-    });
-    write_managed(&app, &entries)?;
-
-    Ok(created)
-}
-
-#[tauri::command]
-pub async fn delete_dynamic_object(app: AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
-    if !is_managed(&app, &id) {
-        return Err("Refusing to delete: this object was not created by this app.".to_string());
-    }
-    let conn = snapshot(&state);
-    let path = format!("/api/fmc_config/v1/domain/{}/object/dynamicobjects/{}", conn.domain, id);
-    api(&conn, Method::DELETE, &path, None).await?;
-
-    let entries: Vec<ManagedEntry> = read_managed(&app).into_iter().filter(|e| e.id != id).collect();
-    write_managed(&app, &entries)?;
-    Ok(())
+    serde_json::from_value(res).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -355,10 +292,7 @@ pub async fn get_mappings(state: State<'_, AppState>, id: String) -> Result<Vec<
     Ok(mappings.into_iter().map(|m| m.mapping).collect())
 }
 
-async fn mapping_op(state: &State<'_, AppState>, app: &AppHandle, id: &str, ip: &str, add: bool) -> Result<(), String> {
-    if !is_managed(app, id) {
-        return Err("Refusing to modify: this object was not created by this app.".to_string());
-    }
+async fn mapping_op(state: &State<'_, AppState>, id: &str, ip: &str, add: bool) -> Result<(), String> {
     let conn = snapshot(state);
     let path = format!("/api/fmc_config/v1/domain/{}/object/dynamicobjectmappings", conn.domain);
     let entry = serde_json::json!({ "dynamicObject": { "id": id }, "mappings": [ip] });
@@ -372,18 +306,13 @@ async fn mapping_op(state: &State<'_, AppState>, app: &AppHandle, id: &str, ip: 
 }
 
 #[tauri::command]
-pub async fn add_mapping(app: AppHandle, state: State<'_, AppState>, id: String, ip: String) -> Result<(), String> {
-    mapping_op(&state, &app, &id, &ip, true).await
+pub async fn add_mapping(state: State<'_, AppState>, id: String, ip: String) -> Result<(), String> {
+    mapping_op(&state, &id, &ip, true).await
 }
 
 #[tauri::command]
-pub async fn remove_mapping(app: AppHandle, state: State<'_, AppState>, id: String, ip: String) -> Result<(), String> {
-    mapping_op(&state, &app, &id, &ip, false).await
-}
-
-#[tauri::command]
-pub fn list_managed(app: AppHandle) -> Vec<ManagedEntry> {
-    read_managed(&app)
+pub async fn remove_mapping(state: State<'_, AppState>, id: String, ip: String) -> Result<(), String> {
+    mapping_op(&state, &id, &ip, false).await
 }
 
 #[tauri::command]
@@ -428,10 +357,4 @@ pub async fn get_policy_threat_usage(state: State<'_, AppState>, policy_id: Stri
         uses_intrusion_policy: !reasons.is_empty(),
         reasons,
     })
-}
-
-fn now_string() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let secs = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
-    format!("epoch:{secs}")
 }

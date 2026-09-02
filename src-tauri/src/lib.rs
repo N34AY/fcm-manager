@@ -24,11 +24,9 @@ pub fn run() {
             fmc::list_dynamic_objects,
             fmc::get_dynamic_object,
             fmc::create_dynamic_object,
-            fmc::delete_dynamic_object,
             fmc::get_mappings,
             fmc::add_mapping,
             fmc::remove_mapping,
-            fmc::list_managed,
             fmc::list_devices,
             fmc::get_policy_threat_usage,
         ])
